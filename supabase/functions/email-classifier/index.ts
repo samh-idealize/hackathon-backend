@@ -4,11 +4,41 @@
 
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Database } from "../database.types.ts";
 
-console.log("Hello from Functions!");
+interface EmailQueue {
+  id: number;
+  content: string;
+}
+
+interface WebhookPayload {
+  type: "INSERT";
+  table: string;
+  record: EmailQueue;
+  schema: "public";
+}
+
+const supabase = createClient<Database>(
+  Deno.env.get("SUPABASE_URL")!,
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+);
 
 Deno.serve(async (req) => {
-  const { id, content } = await req.json();
+  // Get the email content
+  const data: WebhookPayload = await req.json();
+
+  // TODO: Implement Logic
+
+  // 1. Get all categories from the database 
+
+  // 2. Create a prompt for the AI to understand the existing categories
+
+  // 3. AI spits out strucutred IDs
+
+  // 4. Get AI generate title and description for email
+
+  // 5. Save the data to `classified_emails` and `email_categories` tables
 
   return new Response(
     null,
