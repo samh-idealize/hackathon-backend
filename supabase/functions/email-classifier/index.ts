@@ -29,9 +29,10 @@ Deno.serve(async (req) => {
   const data: WebhookPayload = await req.json();
 
   // TODO: Implement Logic
+  
 
   // 1. Get all categories from the database 
-
+  
   // 2. Create a prompt for the AI to understand the existing categories
 
   // 3. AI spits out strucutred IDs
