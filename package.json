@@ -15,5 +15,8 @@
     "url": "https://github.com/samh-idealize/hackathon-backend/issues"
   },
   "homepage": "https://github.com/samh-idealize/hackathon-backend#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "openai": "^4.87.3"
+  }
 }
