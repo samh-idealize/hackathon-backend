@@ -2,12 +2,19 @@
   "version": "4",
   "specifiers": {
     "jsr:@openai/openai@*": "4.87.3",
+    "jsr:@supabase/functions-js@*": "2.4.4",
     "npm:@types/node@*": "22.12.0",
     "npm:openai@^4.52.5": "4.85.4"
   },
   "jsr": {
     "@openai/openai@4.87.3": {
       "integrity": "1a5e6008880ce1b38faa83b5e647becaf870a9f23d1bc61d55f703174055e4c6"
+    },
+    "@supabase/functions-js@2.4.4": {
+      "integrity": "38456509a6e22fb116b118464cbb36357256f9048d3580632b63af91f63769f7",
+      "dependencies": [
+        "npm:openai"
+      ]
     }
   },
   "npm": {

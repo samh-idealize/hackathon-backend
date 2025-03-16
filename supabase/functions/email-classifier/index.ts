@@ -7,7 +7,6 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import OpenAI from "jsr:@openai/openai";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { Database } from "../database.types.ts";
-import { Console } from "node:console";
 
 interface EmailQueue {
   id: number;
@@ -27,43 +26,32 @@ const supabase = createClient<Database>(
 );
 
 const client = new OpenAI({
-  apiKey:
-    , // This is the default and can be omitted
+  apiKey: "", // This is the default and can be omitted
 });
 
 Deno.serve(async (req) => {
-  // Get the email content
   const data: WebhookPayload = await req.json();
-
-  // 1. Get all categories from the database
-  const { data: categories, error } = await supabase.from("categories").select(
+  const { data: categories } = await supabase.from("categories").select(
     "*",
   );
 
-  // console.log(categories)
-
-  /*
-  Classify the email content into one of of the following categories:
-
-  ID: 1, Name: "Tech Support", Description: "Help with technical issues"
-  ID: 2, Name: "Sales", Description: "Help with purchasing products"
-
-  Return the ID of the category that best fits the email content.
-  */
-
-  // 2. Create a prompt for the AI to understand the existing categories
   let content =
-    "Classify the email content into one of of the following categories: ";
+    "You are an email classifier. Below are the only categories you can classify the email into:\n\n";
 
   const categoryListString = categories?.map((category) =>
-    `ID: ${category.id}, Name: "${category.name}", Description: "${category.description}"`
+    `ID: ${category.id}, Name: "${category.name}"`
   ).join("\n");
 
-  content += categoryListString;
-  content +=
-    "\n Return the ID of the category that best fits the email content.";
+  console.log(categoryListString);
 
-  console.log(content);
+  content += categoryListString;
+
+  content +=
+    "\n\nClassify the email strictly into one of the above categories." +
+    " Do not create new categories or modify category names. Only use the given IDs and names." +
+    " Simplify the email content to 50% of its original length and store it as 'description'." +
+    "\n\nReturn the result in the following JSON format. Don't include any other text as I will parse it directly:\n" +
+    'e.g. { "id": category.id, "title": "[A summarised title of the email]", "description": "[A summarised description of the email]" }';
 
   const completion = await client.chat.completions.create({
     model: "gpt-4o",
@@ -74,18 +62,26 @@ Deno.serve(async (req) => {
       },
       {
         role: "user",
-        content:
-          "Let me start with a question: Are you having trouble generating leads and experiencing low website traffic?",
+        content: data.record.content,
       },
     ],
   });
 
-  console.log(completion.choices[0].message.content);
-  // 3. AI spits out strucutred IDs
+  const jsonContent = JSON.parse(completion.choices[0].message.content!);
 
-  // 4. Get AI generate title and description for email
+  await supabase.from(
+    "classified_emails",
+  ).insert({
+    id: data.record.id,
+    title: jsonContent.title,
+    description: jsonContent.description,
+    status: "not_started",
+  });
 
-  // 5. Save the data to `classified_emails` and `email_categories` tables
+  await supabase.from("email_categories").insert({
+    email_id: data.record.id,
+    category_id: jsonContent.id,
+  });
 
   return new Response(
     null,
