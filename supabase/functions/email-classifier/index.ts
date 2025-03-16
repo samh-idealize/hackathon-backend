@@ -26,7 +26,7 @@ const supabase = createClient<Database>(
 );
 
 const client = new OpenAI({
-  apiKey: "", // This is the default and can be omitted
+  apiKey: Deno.env.get("OPENAI_API_KEY"), // This is the default and can be omitted
 });
 
 Deno.serve(async (req) => {
@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     "\n\nClassify the email strictly into one of the above categories." +
     " Do not create new categories or modify category names. Only use the given IDs and names." +
     " Simplify the email content to 50% of its original length and store it as 'description'." +
-    "\n\nReturn the result in the following JSON format. Don't include any other text as I will parse it directly:\n" +
+    "\n\nReturn the data in pure JSON because I will parse it directly.\n" +
     'e.g. { "id": category.id, "title": "[A summarised title of the email]", "description": "[A summarised description of the email]" }';
 
   const completion = await client.chat.completions.create({
